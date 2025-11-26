@@ -8,10 +8,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+type GeneratedSite = {
+  id: string;
+  title: string;
+  sections: Array<{
+    type: 'hero' | 'features' | 'cta' | 'footer';
+    content: any;
+  }>;
+};
+
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedSite, setGeneratedSite] = useState<GeneratedSite | null>(null);
 
   const components = [
     { id: 'hero', name: 'Hero Section', icon: 'Sparkles', category: 'layout' },
@@ -34,6 +45,201 @@ const Index = () => {
     { id: '2', name: 'Discord Music Bot', updated: '1 день назад', status: 'draft' },
     { id: '3', name: 'Shop Website', updated: '3 дня назад', status: 'active' },
   ];
+
+  const generateSite = () => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      const prompt = aiPrompt.toLowerCase();
+      let siteType = 'landing';
+      
+      if (prompt.includes('магазин') || prompt.includes('shop') || prompt.includes('e-commerce')) {
+        siteType = 'ecommerce';
+      } else if (prompt.includes('портфолио') || prompt.includes('portfolio')) {
+        siteType = 'portfolio';
+      } else if (prompt.includes('блог') || prompt.includes('blog')) {
+        siteType = 'blog';
+      }
+      
+      const templates: Record<string, GeneratedSite> = {
+        landing: {
+          id: Date.now().toString(),
+          title: 'Современный Лендинг',
+          sections: [
+            {
+              type: 'hero',
+              content: {
+                title: aiPrompt || 'Ваш проект начинается здесь',
+                subtitle: 'Профессиональное решение для вашего бизнеса',
+                cta: 'Начать',
+                image: '🚀'
+              }
+            },
+            {
+              type: 'features',
+              content: {
+                title: 'Возможности',
+                items: [
+                  { icon: '⚡', title: 'Быстро', description: 'Молниеносная загрузка страниц' },
+                  { icon: '🎨', title: 'Красиво', description: 'Современный дизайн интерфейса' },
+                  { icon: '🔒', title: 'Безопасно', description: 'Защита данных пользователей' },
+                  { icon: '📱', title: 'Адаптивно', description: 'Работает на всех устройствах' },
+                  { icon: '🌍', title: 'Глобально', description: 'Поддержка всех языков' },
+                  { icon: '💎', title: 'Премиум', description: 'Высокое качество кода' }
+                ]
+              }
+            },
+            {
+              type: 'cta',
+              content: {
+                title: 'Готовы начать?',
+                subtitle: 'Присоединяйтесь к тысячам довольных клиентов',
+                button: 'Попробовать бесплатно'
+              }
+            },
+            {
+              type: 'footer',
+              content: {
+                text: '© 2024 Ваша компания. Все права защищены.'
+              }
+            }
+          ]
+        },
+        ecommerce: {
+          id: Date.now().toString(),
+          title: 'Интернет-магазин',
+          sections: [
+            {
+              type: 'hero',
+              content: {
+                title: 'Добро пожаловать в наш магазин',
+                subtitle: 'Лучшие товары по выгодным ценам',
+                cta: 'Смотреть каталог',
+                image: '🛍️'
+              }
+            },
+            {
+              type: 'features',
+              content: {
+                title: 'Популярные категории',
+                items: [
+                  { icon: '👕', title: 'Одежда', description: 'Стильная модная одежда' },
+                  { icon: '💻', title: 'Электроника', description: 'Новейшие гаджеты' },
+                  { icon: '🏠', title: 'Для дома', description: 'Товары для уюта' },
+                  { icon: '⚽', title: 'Спорт', description: 'Спортивные товары' },
+                  { icon: '📚', title: 'Книги', description: 'Бестселлеры и новинки' },
+                  { icon: '🎮', title: 'Игры', description: 'Видеоигры и аксессуары' }
+                ]
+              }
+            },
+            {
+              type: 'cta',
+              content: {
+                title: 'Специальное предложение',
+                subtitle: 'Скидка 20% на первый заказ',
+                button: 'Получить скидку'
+              }
+            },
+            {
+              type: 'footer',
+              content: {
+                text: '© 2024 Магазин. Доставка по всему миру.'
+              }
+            }
+          ]
+        },
+        portfolio: {
+          id: Date.now().toString(),
+          title: 'Портфолио',
+          sections: [
+            {
+              type: 'hero',
+              content: {
+                title: 'Привет, я дизайнер',
+                subtitle: 'Создаю красивые и функциональные интерфейсы',
+                cta: 'Мои работы',
+                image: '🎨'
+              }
+            },
+            {
+              type: 'features',
+              content: {
+                title: 'Навыки',
+                items: [
+                  { icon: '🎨', title: 'UI/UX Design', description: 'Дизайн интерфейсов' },
+                  { icon: '💻', title: 'Web Development', description: 'Разработка сайтов' },
+                  { icon: '📱', title: 'Mobile Design', description: 'Мобильные приложения' },
+                  { icon: '🖼️', title: 'Branding', description: 'Фирменный стиль' },
+                  { icon: '✏️', title: 'Illustration', description: 'Иллюстрации' },
+                  { icon: '🎬', title: 'Animation', description: 'Анимация и моушн' }
+                ]
+              }
+            },
+            {
+              type: 'cta',
+              content: {
+                title: 'Есть проект?',
+                subtitle: 'Давайте обсудим ваши идеи',
+                button: 'Связаться со мной'
+              }
+            },
+            {
+              type: 'footer',
+              content: {
+                text: '© 2024 Портфолио. Создано с любовью.'
+              }
+            }
+          ]
+        },
+        blog: {
+          id: Date.now().toString(),
+          title: 'Блог',
+          sections: [
+            {
+              type: 'hero',
+              content: {
+                title: 'Блог о технологиях',
+                subtitle: 'Статьи, новости и обзоры из мира IT',
+                cta: 'Читать статьи',
+                image: '📝'
+              }
+            },
+            {
+              type: 'features',
+              content: {
+                title: 'Последние статьи',
+                items: [
+                  { icon: '🚀', title: 'Web разработка', description: 'Тренды 2024 года' },
+                  { icon: '🤖', title: 'Искусственный интеллект', description: 'AI в повседневной жизни' },
+                  { icon: '📱', title: 'Мобильные технологии', description: 'Новые возможности' },
+                  { icon: '🔐', title: 'Кибербезопасность', description: 'Защита данных' },
+                  { icon: '☁️', title: 'Cloud технологии', description: 'Облачные решения' },
+                  { icon: '💡', title: 'Стартапы', description: 'Истории успеха' }
+                ]
+              }
+            },
+            {
+              type: 'cta',
+              content: {
+                title: 'Подписаться на рассылку',
+                subtitle: 'Получайте новые статьи на email',
+                button: 'Подписаться'
+              }
+            },
+            {
+              type: 'footer',
+              content: {
+                text: '© 2024 Блог. Новые статьи каждую неделю.'
+              }
+            }
+          ]
+        }
+      };
+      
+      setGeneratedSite(templates[siteType]);
+      setIsGenerating(false);
+    }, 1500);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -290,9 +496,61 @@ const Index = () => {
                   </Button>
                 </div>
 
-                <div className="border-2 border-dashed rounded-lg min-h-[500px] mt-12 bg-white p-8 flex items-center justify-center">
-                  {selectedComponent ? (
-                    <div className="text-center animate-scale-in">
+                <div className="border-2 border-dashed rounded-lg min-h-[500px] mt-12 bg-white overflow-y-auto">
+                  {generatedSite ? (
+                    <div className="animate-fade-in">
+                      {generatedSite.sections.map((section, idx) => {
+                        if (section.type === 'hero') {
+                          return (
+                            <div key={idx} className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white py-20 px-8 text-center">
+                              <div className="text-6xl mb-4">{section.content.image}</div>
+                              <h1 className="text-4xl font-bold mb-4">{section.content.title}</h1>
+                              <p className="text-xl mb-6 opacity-90">{section.content.subtitle}</p>
+                              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                                {section.content.cta}
+                              </button>
+                            </div>
+                          );
+                        }
+                        if (section.type === 'features') {
+                          return (
+                            <div key={idx} className="py-16 px-8">
+                              <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">{section.content.title}</h2>
+                              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                                {section.content.items.map((item: any, i: number) => (
+                                  <div key={i} className="p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                                    <div className="text-4xl mb-3">{item.icon}</div>
+                                    <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
+                                    <p className="text-gray-600">{item.description}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        if (section.type === 'cta') {
+                          return (
+                            <div key={idx} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16 px-8 text-center">
+                              <h2 className="text-3xl font-bold mb-4">{section.content.title}</h2>
+                              <p className="text-xl mb-6 opacity-90">{section.content.subtitle}</p>
+                              <button className="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors">
+                                {section.content.button}
+                              </button>
+                            </div>
+                          );
+                        }
+                        if (section.type === 'footer') {
+                          return (
+                            <div key={idx} className="bg-gray-900 text-white py-8 px-8 text-center">
+                              <p className="text-gray-400">{section.content.text}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ) : selectedComponent ? (
+                    <div className="text-center p-8 animate-scale-in">
                       <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                         <Icon name="CheckCircle" className="text-blue-600" size={32} />
                       </div>
@@ -300,10 +558,12 @@ const Index = () => {
                       <p className="text-sm text-gray-500 mt-2">Перетащите сюда другие компоненты</p>
                     </div>
                   ) : (
-                    <div className="text-center">
-                      <Icon name="MousePointerClick" className="text-gray-400 mx-auto mb-4" size={48} />
-                      <p className="text-gray-600 font-medium mb-2">Перетащите компоненты сюда</p>
-                      <p className="text-sm text-gray-500">или используйте AI ассистента справа</p>
+                    <div className="text-center p-8 flex items-center justify-center min-h-[500px]">
+                      <div>
+                        <Icon name="MousePointerClick" className="text-gray-400 mx-auto mb-4" size={48} />
+                        <p className="text-gray-600 font-medium mb-2">Перетащите компоненты сюда</p>
+                        <p className="text-sm text-gray-500">или используйте AI ассистента справа</p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -361,26 +621,51 @@ const Index = () => {
                   />
                   <Button 
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    disabled={!aiPrompt.trim()}
+                    disabled={!aiPrompt.trim() || isGenerating}
+                    onClick={generateSite}
                   >
-                    <Icon name="Sparkles" size={16} className="mr-2" />
-                    Сгенерировать
+                    {isGenerating ? (
+                      <>
+                        <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                        Генерирую...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Sparkles" size={16} className="mr-2" />
+                        Сгенерировать
+                      </>
+                    )}
                   </Button>
                 </div>
 
                 <div className="mt-4 pt-4 border-t space-y-2">
                   <p className="text-xs text-gray-500 font-medium">БЫСТРЫЕ КОМАНДЫ</p>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start text-xs"
+                    onClick={() => { setAiPrompt('Создай современный лендинг для стартапа'); generateSite(); }}
+                  >
                     <Icon name="Layout" size={14} className="mr-2" />
                     Создать лендинг
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start text-xs"
+                    onClick={() => { setAiPrompt('Создай интернет-магазин с каталогом товаров'); generateSite(); }}
+                  >
                     <Icon name="ShoppingCart" size={14} className="mr-2" />
-                    Добавить корзину
+                    Интернет-магазин
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-                    <Icon name="MessageSquare" size={14} className="mr-2" />
-                    Форма обратной связи
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start text-xs"
+                    onClick={() => { setAiPrompt('Создай портфолио для дизайнера'); generateSite(); }}
+                  >
+                    <Icon name="Briefcase" size={14} className="mr-2" />
+                    Портфолио
                   </Button>
                 </div>
               </Card>
