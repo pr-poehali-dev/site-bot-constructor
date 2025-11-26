@@ -23,6 +23,8 @@ const Index = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSite, setGeneratedSite] = useState<GeneratedSite | null>(null);
+  const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState<any>(null);
 
   const components = [
     { id: 'hero', name: 'Hero Section', icon: 'Sparkles', category: 'layout' },
@@ -239,6 +241,56 @@ const Index = () => {
       setGeneratedSite(templates[siteType]);
       setIsGenerating(false);
     }, 1500);
+  };
+
+  const startEditingSection = (index: number) => {
+    setEditingSectionIndex(index);
+    if (generatedSite) {
+      setEditingContent({ ...generatedSite.sections[index].content });
+    }
+  };
+
+  const saveEditing = () => {
+    if (generatedSite && editingSectionIndex !== null && editingContent) {
+      const newSite = { ...generatedSite };
+      newSite.sections[editingSectionIndex].content = editingContent;
+      setGeneratedSite(newSite);
+      setEditingSectionIndex(null);
+      setEditingContent(null);
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingSectionIndex(null);
+    setEditingContent(null);
+  };
+
+  const deleteSection = (index: number) => {
+    if (generatedSite) {
+      const newSite = { ...generatedSite };
+      newSite.sections.splice(index, 1);
+      setGeneratedSite(newSite);
+    }
+  };
+
+  const moveSectionUp = (index: number) => {
+    if (generatedSite && index > 0) {
+      const newSite = { ...generatedSite };
+      const temp = newSite.sections[index];
+      newSite.sections[index] = newSite.sections[index - 1];
+      newSite.sections[index - 1] = temp;
+      setGeneratedSite(newSite);
+    }
+  };
+
+  const moveSectionDown = (index: number) => {
+    if (generatedSite && index < generatedSite.sections.length - 1) {
+      const newSite = { ...generatedSite };
+      const temp = newSite.sections[index];
+      newSite.sections[index] = newSite.sections[index + 1];
+      newSite.sections[index + 1] = temp;
+      setGeneratedSite(newSite);
+    }
   };
 
   return (
@@ -499,10 +551,46 @@ const Index = () => {
                 <div className="border-2 border-dashed rounded-lg min-h-[500px] mt-12 bg-white overflow-y-auto">
                   {generatedSite ? (
                     <div className="animate-fade-in">
-                      {generatedSite.sections.map((section, idx) => {
-                        if (section.type === 'hero') {
-                          return (
-                            <div key={idx} className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white py-20 px-8 text-center">
+                      {generatedSite.sections.map((section, idx) => (
+                        <div key={idx} className="relative group">
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-1">
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => startEditingSection(idx)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Icon name="Pencil" size={14} />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => moveSectionUp(idx)}
+                              disabled={idx === 0}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Icon name="ArrowUp" size={14} />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => moveSectionDown(idx)}
+                              disabled={idx === generatedSite.sections.length - 1}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Icon name="ArrowDown" size={14} />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => deleteSection(idx)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Icon name="Trash2" size={14} />
+                            </Button>
+                          </div>
+                          {section.type === 'hero' && (
+                            <div className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white py-20 px-8 text-center">
                               <div className="text-6xl mb-4">{section.content.image}</div>
                               <h1 className="text-4xl font-bold mb-4">{section.content.title}</h1>
                               <p className="text-xl mb-6 opacity-90">{section.content.subtitle}</p>
@@ -510,11 +598,9 @@ const Index = () => {
                                 {section.content.cta}
                               </button>
                             </div>
-                          );
-                        }
-                        if (section.type === 'features') {
-                          return (
-                            <div key={idx} className="py-16 px-8">
+                          )}
+                          {section.type === 'features' && (
+                            <div className="py-16 px-8">
                               <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">{section.content.title}</h2>
                               <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                                 {section.content.items.map((item: any, i: number) => (
@@ -526,28 +612,23 @@ const Index = () => {
                                 ))}
                               </div>
                             </div>
-                          );
-                        }
-                        if (section.type === 'cta') {
-                          return (
-                            <div key={idx} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16 px-8 text-center">
+                          )}
+                          {section.type === 'cta' && (
+                            <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16 px-8 text-center">
                               <h2 className="text-3xl font-bold mb-4">{section.content.title}</h2>
                               <p className="text-xl mb-6 opacity-90">{section.content.subtitle}</p>
                               <button className="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors">
                                 {section.content.button}
                               </button>
                             </div>
-                          );
-                        }
-                        if (section.type === 'footer') {
-                          return (
-                            <div key={idx} className="bg-gray-900 text-white py-8 px-8 text-center">
+                          )}
+                          {section.type === 'footer' && (
+                            <div className="bg-gray-900 text-white py-8 px-8 text-center">
                               <p className="text-gray-400">{section.content.text}</p>
                             </div>
-                          );
-                        }
-                        return null;
-                      })}
+                          )}
+                        </div>
+                      ))}
                     </div>
                   ) : selectedComponent ? (
                     <div className="text-center p-8 animate-scale-in">
@@ -590,84 +671,195 @@ const Index = () => {
                 </div>
               </Card>
 
-              {/* Right Sidebar - AI Assistant */}
+              {/* Right Sidebar - AI Assistant or Properties */}
               <Card className="lg:col-span-3 p-4 flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                    <Icon name="Sparkles" className="text-white" size={16} />
-                  </div>
-                  <h3 className="font-semibold">AI Ассистент</h3>
-                </div>
-
-                <div className="flex-1 overflow-y-auto mb-4 space-y-3">
-                  <div className="bg-blue-50 rounded-lg p-3 text-sm">
-                    <p className="font-medium text-blue-900 mb-1">AI помощник готов! 🎉</p>
-                    <p className="text-blue-700">Опишите, что нужно создать, и я сгенерирую код и дизайн.</p>
-                  </div>
-                  
-                  {aiPrompt && (
-                    <div className="bg-white border rounded-lg p-3 text-sm">
-                      <p className="text-gray-700">{aiPrompt}</p>
+                {editingSectionIndex !== null && editingContent ? (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold">Редактирование секции</h3>
+                      <Button variant="ghost" size="sm" onClick={cancelEditing}>
+                        <Icon name="X" size={16} />
+                      </Button>
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder="Например: Создай Hero секцию с кнопкой и изображением..."
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                  <Button 
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    disabled={!aiPrompt.trim() || isGenerating}
-                    onClick={generateSite}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
-                        Генерирую...
-                      </>
-                    ) : (
-                      <>
-                        <Icon name="Sparkles" size={16} className="mr-2" />
-                        Сгенерировать
-                      </>
-                    )}
-                  </Button>
-                </div>
+                    <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+                      {generatedSite?.sections[editingSectionIndex].type === 'hero' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Эмодзи</label>
+                            <Input
+                              value={editingContent.image || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, image: e.target.value })}
+                              placeholder="🚀"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Заголовок</label>
+                            <Input
+                              value={editingContent.title || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, title: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Подзаголовок</label>
+                            <Textarea
+                              value={editingContent.subtitle || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, subtitle: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Текст кнопки</label>
+                            <Input
+                              value={editingContent.cta || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, cta: e.target.value })}
+                            />
+                          </div>
+                        </>
+                      )}
 
-                <div className="mt-4 pt-4 border-t space-y-2">
-                  <p className="text-xs text-gray-500 font-medium">БЫСТРЫЕ КОМАНДЫ</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-start text-xs"
-                    onClick={() => { setAiPrompt('Создай современный лендинг для стартапа'); generateSite(); }}
-                  >
-                    <Icon name="Layout" size={14} className="mr-2" />
-                    Создать лендинг
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-start text-xs"
-                    onClick={() => { setAiPrompt('Создай интернет-магазин с каталогом товаров'); generateSite(); }}
-                  >
-                    <Icon name="ShoppingCart" size={14} className="mr-2" />
-                    Интернет-магазин
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-start text-xs"
-                    onClick={() => { setAiPrompt('Создай портфолио для дизайнера'); generateSite(); }}
-                  >
-                    <Icon name="Briefcase" size={14} className="mr-2" />
-                    Портфолио
-                  </Button>
-                </div>
+                      {generatedSite?.sections[editingSectionIndex].type === 'features' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Заголовок секции</label>
+                            <Input
+                              value={editingContent.title || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, title: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium mb-2">Элементы (по 3 поля)</p>
+                            <p className="text-xs text-gray-500 mb-2">Иконка | Заголовок | Описание</p>
+                          </div>
+                        </>
+                      )}
+
+                      {generatedSite?.sections[editingSectionIndex].type === 'cta' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Заголовок</label>
+                            <Input
+                              value={editingContent.title || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, title: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Подзаголовок</label>
+                            <Input
+                              value={editingContent.subtitle || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, subtitle: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Текст кнопки</label>
+                            <Input
+                              value={editingContent.button || ''}
+                              onChange={(e) => setEditingContent({ ...editingContent, button: e.target.value })}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {generatedSite?.sections[editingSectionIndex].type === 'footer' && (
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Текст футера</label>
+                          <Textarea
+                            value={editingContent.text || ''}
+                            onChange={(e) => setEditingContent({ ...editingContent, text: e.target.value })}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Button className="w-full" onClick={saveEditing}>
+                        <Icon name="Check" size={16} className="mr-2" />
+                        Сохранить изменения
+                      </Button>
+                      <Button className="w-full" variant="outline" onClick={cancelEditing}>
+                        Отмена
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                        <Icon name="Sparkles" className="text-white" size={16} />
+                      </div>
+                      <h3 className="font-semibold">AI Ассистент</h3>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto mb-4 space-y-3">
+                      <div className="bg-blue-50 rounded-lg p-3 text-sm">
+                        <p className="font-medium text-blue-900 mb-1">AI помощник готов! 🎉</p>
+                        <p className="text-blue-700">Опишите, что нужно создать, и я сгенерирую код и дизайн.</p>
+                      </div>
+                      
+                      {aiPrompt && (
+                        <div className="bg-white border rounded-lg p-3 text-sm">
+                          <p className="text-gray-700">{aiPrompt}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Например: Создай Hero секцию с кнопкой и изображением..."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                      <Button 
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        disabled={!aiPrompt.trim() || isGenerating}
+                        onClick={generateSite}
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                            Генерирую...
+                          </>
+                        ) : (
+                          <>
+                            <Icon name="Sparkles" size={16} className="mr-2" />
+                            Сгенерировать
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t space-y-2">
+                      <p className="text-xs text-gray-500 font-medium">БЫСТРЫЕ КОМАНДЫ</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start text-xs"
+                        onClick={() => { setAiPrompt('Создай современный лендинг для стартапа'); generateSite(); }}
+                      >
+                        <Icon name="Layout" size={14} className="mr-2" />
+                        Создать лендинг
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start text-xs"
+                        onClick={() => { setAiPrompt('Создай интернет-магазин с каталогом товаров'); generateSite(); }}
+                      >
+                        <Icon name="ShoppingCart" size={14} className="mr-2" />
+                        Интернет-магазин
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start text-xs"
+                        onClick={() => { setAiPrompt('Создай портфолио для дизайнера'); generateSite(); }}
+                      >
+                        <Icon name="Briefcase" size={14} className="mr-2" />
+                        Портфолио
+                      </Button>
+                    </div>
+                  </>
+                )}
               </Card>
             </div>
           </div>
